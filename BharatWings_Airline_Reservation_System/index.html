@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxMjAxNzg2NjY5NzEwMDQyNDY2MiIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjX2EzOTJmMzg4NjIyZDYzY2NfaW5kZXguaHRtbC0yNSJ9LCJleHAiOjE3OTI3NzMwNzYsImlhdCI6MTc5Mjc2OTQ3NiwiYWxnIjoiUlMyNTYifQ.IWMel9cn-_8anlAiUpzT6lLOk_yKDTcunZ373Iz54x6SdakohyA_1fXnoOOCz0frSROiXOgV8MVaG-xHE6h6hl2cRzyqUTFaZ8Nd06CGiGN4WNsBDzfF2BcmtbIZZtFlRIdsdP3CPsux6qdQjqDqt0A1PlNBwY87nMm1SZRebcvfpo9rNENhvyz71Mqkn5DfDhhrWibhMgQXSvMYb-rzUEHRaQZ7xHKQAEK-y49j8oiTAoxGUFXXKbQILMxo3boBoK8noV46uxH3lrT2bmwH_UTnyVXseSSs2N8EdnSTSBFb127-d1xfDWgDna-MGAgc26iw8rSAkDvkh7pl53SLCA","c_a392f388622d63cc_index.html-25")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BharatWings - Indian Airline Reservation &amp; Ticket Booking System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- JSZip and FileSaver for Zip Exporting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" crossorigin="anonymous"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#095082',
+                            900: '#0c2a4a',
+                        },
+                        india: {
+                            saffron: '#FF9933',
+                            white: '#FFFFFF',
+                            green: '#138808',
+                            navy: '#000080'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0c2a4a 0%, #0369a1 50%, #0284c7 100%);
+        }
+        .ticket-cutout-left, .ticket-cutout-right {
+            position: relative;
+        }
+        .ticket-cutout-left::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background-color: #f3f4f6;
+            border-radius: 50%;
+        }
+        .ticket-cutout-right::after {
+            content: '';
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background-color: #f3f4f6;
+            border-radius: 50%;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.-bottom-10{bottom:-2.5rem}.-right-10{right:-2.5rem}.bottom-5{bottom:1.25rem}.left-3{left:0.75rem}.right-5{right:1.25rem}.top-0{top:0px}.top-3{top:0.75rem}.z-10{z-index:10}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.my-1{margin-top:0.25rem;margin-bottom:0.25rem}.mb-1{margin-bottom:0.25rem}.mb-4{margin-bottom:1rem}.ml-2{margin-left:0.5rem}.mr-1{margin-right:0.25rem}.mr-2{margin-right:0.5rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-auto{margin-top:auto}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-0\.5{height:0.125rem}.h-2\.5{height:0.625rem}.h-20{height:5rem}.h-6{height:1.5rem}.h-8{height:2rem}.max-h-\[90vh\]{max-height:90vh}.min-h-screen{min-height:100vh}.w-1{width:0.25rem}.w-1\/2{width:50%}.w-2{width:0.5rem}.w-2\.5{width:0.625rem}.w-24{width:6rem}.w-3{width:0.75rem}.w-32{width:8rem}.w-6{width:1.5rem}.w-full{width:100%}.max-w-2xl{max-width:42rem}.max-w-7xl{max-width:80rem}.max-w-lg{max-width:32rem}.max-w-xl{max-width:36rem}.flex-grow{flex-grow:1}.border-collapse{border-collapse:collapse}@keyframes ping{75%, 100%{transform:scale(2);opacity:0}}.animate-ping{animation:ping 1s cubic-bezier(0, 0, 0.2, 1) infinite}.cursor-pointer{cursor:pointer}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.items-baseline{align-items:baseline}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.justify-around{justify-content:space-around}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.space-x-1 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.25rem * var(--tw-space-x-reverse));margin-left:calc(0.25rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-3 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.75rem * var(--tw-space-x-reverse));margin-left:calc(0.75rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-4 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1rem * var(--tw-space-x-reverse));margin-left:calc(1rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-y-8 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(2rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(2rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-slate-100 > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(241 245 249 / var(--tw-divide-opacity, 1))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-brand-700{--tw-border-opacity:1;border-color:rgb(9 80 130 / var(--tw-border-opacity, 1))}.border-emerald-200{--tw-border-opacity:1;border-color:rgb(167 243 208 / var(--tw-border-opacity, 1))}.border-sky-400\/30{border-color:rgb(56 189 248 / 0.3)}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-white\/10{border-color:rgb(255 255 255 / 0.1)}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-amber-100{--tw-bg-opacity:1;background-color:rgb(254 243 199 / var(--tw-bg-opacity, 1))}.bg-amber-400{--tw-bg-opacity:1;background-color:rgb(251 191 36 / var(--tw-bg-opacity, 1))}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-blue-100{--tw-bg-opacity:1;background-color:rgb(219 234 254 / var(--tw-bg-opacity, 1))}.bg-brand-500\/30{background-color:rgb(2 132 199 / 0.3)}.bg-brand-600{--tw-bg-opacity:1;background-color:rgb(3 105 161 / var(--tw-bg-opacity, 1))}.bg-brand-900{--tw-bg-opacity:1;background-color:rgb(12 42 74 / var(--tw-bg-opacity, 1))}.bg-emerald-100{--tw-bg-opacity:1;background-color:rgb(209 250 229 / var(--tw-bg-opacity, 1))}.bg-emerald-50{--tw-bg-opacity:1;background-color:rgb(236 253 245 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-purple-100{--tw-bg-opacity:1;background-color:rgb(243 232 255 / var(--tw-bg-opacity, 1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-slate-600{--tw-bg-opacity:1;background-color:rgb(71 85 105 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-800\/80{background-color:rgb(30 41 59 / 0.8)}.bg-slate-800\/90{background-color:rgb(30 41 59 / 0.9)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/60{background-color:rgb(15 23 42 / 0.6)}.bg-slate-900\/70{background-color:rgb(15 23 42 / 0.7)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/10{background-color:rgb(255 255 255 / 0.1)}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-slate-900{--tw-gradient-from:#0f172a var(--tw-gradient-from-position);--tw-gradient-to:rgb(15 23 42 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-brand-900{--tw-gradient-to:rgb(12 42 74 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #0c2a4a var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-slate-900{--tw-gradient-to:#0f172a var(--tw-gradient-to-position)}.p-1{padding:0.25rem}.p-1\.5{padding:0.375rem}.p-2{padding:0.5rem}.p-2\.5{padding:0.625rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-8{padding-top:2rem;padding-bottom:2rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.pb-2{padding-bottom:0.5rem}.pb-3{padding-bottom:0.75rem}.pl-9{padding-left:2.25rem}.pr-4{padding-right:1rem}.pt-2{padding-top:0.5rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-sans{font-family:Inter, sans-serif}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[220px\]{font-size:220px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-none{line-height:1}.tracking-tight{letter-spacing:-0.025em}.tracking-wide{letter-spacing:0.025em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6 / var(--tw-text-opacity, 1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-brand-500{--tw-text-opacity:1;color:rgb(2 132 199 / var(--tw-text-opacity, 1))}.text-brand-600{--tw-text-opacity:1;color:rgb(3 105 161 / var(--tw-text-opacity, 1))}.text-brand-700{--tw-text-opacity:1;color:rgb(9 80 130 / var(--tw-text-opacity, 1))}.text-brand-900{--tw-text-opacity:1;color:rgb(12 42 74 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105 / var(--tw-text-opacity, 1))}.text-purple-600{--tw-text-opacity:1;color:rgb(147 51 234 / var(--tw-text-opacity, 1))}.text-sky-200{--tw-text-opacity:1;color:rgb(186 230 253 / var(--tw-text-opacity, 1))}.text-sky-300{--tw-text-opacity:1;color:rgb(125 211 252 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-emerald-700{--tw-text-opacity:1;color:rgb(4 120 87 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.opacity-10{opacity:0.1}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.outline-none{outline:2px solid transparent;outline-offset:2px}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-150{transition-duration:150ms}.duration-200{transition-duration:200ms}.hover\:bg-amber-500:hover{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.hover\:bg-amber-600:hover{--tw-bg-opacity:1;background-color:rgb(217 119 6 / var(--tw-bg-opacity, 1))}.hover\:bg-brand-700:hover{--tw-bg-opacity:1;background-color:rgb(9 80 130 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-700:hover{--tw-bg-opacity:1;background-color:rgb(4 120 87 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-100:hover{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-900:hover{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.hover\:bg-white\/10:hover{background-color:rgb(255 255 255 / 0.1)}.hover\:bg-slate-50:hover{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.hover\:text-slate-600:hover{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.focus\:bg-white:focus{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-amber-400:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(251 191 36 / var(--tw-ring-opacity, 1))}.focus\:ring-brand-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(2 132 199 / var(--tw-ring-opacity, 1))}@media (min-width: 640px){.sm\:block{display:block}.sm\:inline{display:inline}.sm\:w-64{width:16rem}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.sm\:flex-row{flex-direction:row}.sm\:items-center{align-items:center}.sm\:p-8{padding:2rem}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}}@media (min-width: 768px){.md\:flex{display:flex}.md\:hidden{display:none}.md\:w-auto{width:auto}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}}@media (min-width: 1024px){.lg\:px-8{padding-left:2rem;padding-right:2rem}}</style></head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+    <!-- Top Navigation Header -->
+    <header class="gradient-bg text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo & Brand -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                    <div class="bg-white text-brand-700 p-2.5 rounded-xl shadow-md">
+                        <i class="fa-solid => fa-plane-departure text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-1">
+                            <span class="font-extrabold text-2xl tracking-tight">Bharat<span class="text-amber-400">Wings</span></span>
+                            <span class="bg-amber-400 text-slate-900 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">Cloud Sync</span>
+                        </div>
+                        <p class="text-xs text-sky-200">Pan-India Flight Reservation Network</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1 bg-white/10 p-1.5 rounded-xl backdrop-blur-md">
+                    <button id="nav-dashboard" onclick="switchTab('dashboard')" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-white text-brand-900 shadow">
+                        <i class="fa-solid fa-chart-line mr-2"></i>Dashboard
+                    </button>
+                    <button id="nav-booking" onclick="switchTab('booking')" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/10 transition-all duration-200">
+                        <i class="fa-solid fa-ticket mr-2"></i>Book Ticket
+                    </button>
+                    <button id="nav-manage" onclick="switchTab('manage')" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/10 transition-all duration-200 flex items-center">
+                        <i class="fa-solid fa-list-check mr-2"></i>Manage Bookings
+                        <span id="booking-badge" class="ml-2 bg-amber-400 text-slate-900 text-xs px-2 py-0.5 rounded-full font-bold">1</span>
+                    </button>
+                </nav>
+
+                <!-- Actions Right -->
+                <div class="flex items-center space-x-3">
+                    <button onclick="downloadProjectZip()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-xl text-sm transition shadow-md flex items-center space-x-2">
+                        <i class="fa-solid fa-file-zipper text-lg"></i>
+                        <span class="hidden sm:inline">Export ZIP Code</span>
+                    </button>
+                    <div class="md:hidden">
+                        <button onclick="toggleMobileMenu()" class="p-2 rounded-lg hover:bg-white/10 text-white">
+                            <i class="fa-solid fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-brand-900 border-t border-brand-700 px-4 py-3 space-y-2">
+            <button onclick="switchTab('dashboard'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg font-medium text-white hover:bg-white/10 flex items-center">
+                <i class="fa-solid fa-chart-line w-6"></i>Dashboard
+            </button>
+            <button onclick="switchTab('booking'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg font-medium text-white hover:bg-white/10 flex items-center">
+                <i class="fa-solid fa-ticket w-6"></i>Book Flight
+            </button>
+            <button onclick="switchTab('manage'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg font-medium text-white hover:bg-white/10 flex items-center justify-between">
+                <span><i class="fa-solid fa-list-check w-6"></i>Manage Bookings</span>
+                <span id="mobile-booking-badge" class="bg-amber-400 text-slate-900 text-xs px-2 py-0.5 rounded-full font-bold">1</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Notification Toast Box -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2"></div>
+
+    <!-- Main Content Body -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ================= SECTION 1: DASHBOARD ================= -->
+        <section id="section-dashboard" class="space-y-8">
+            <!-- Cloud & Quick Stats Banner -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                    <div class="p-3.5 bg-blue-100 text-blue-600 rounded-xl">
+                        <i class="fa-solid fa-plane text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase text-slate-400">Total Bookings</p>
+                        <h3 id="stat-total" class="text-2xl font-bold text-slate-800">1</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                    <div class="p-3.5 bg-emerald-100 text-emerald-600 rounded-xl">
+                        <i class="fa-solid fa-indian-rupee-sign text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase text-slate-400">Revenue (INR)</p>
+                        <h3 id="stat-revenue" class="text-2xl font-bold text-slate-800">₹4,500</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                    <div class="p-3.5 bg-purple-100 text-purple-600 rounded-xl">
+                        <i class="fa-solid fa-city text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase text-slate-400">Active Routes</p>
+                        <h3 class="text-2xl font-bold text-slate-800">12 Major Hubs</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                    <div class="p-3.5 bg-amber-100 text-amber-600 rounded-xl">
+                        <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase text-slate-400">Cloud Sync Status</p>
+                        <h3 class="text-sm font-bold text-emerald-600 flex items-center mt-1">
+                            <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping mr-2"></span> Active Storage
+                        </h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Search / Flight Route Finder Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-brand-900 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-plane-departure text-[220px]"></i>
+                </div>
+                <div class="relative z-10 space-y-4">
+                    <span class="bg-brand-500/30 text-sky-300 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide border border-sky-400/30">
+                        <i class="fa-solid fa-bolt mr-1"></i> Quick Flight Search
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Find Flights Across India</h2>
+                    <p class="text-sky-200 text-sm max-w-xl">Search daily direct flights operated by Air India, IndiGo, Vistara, Akasa Air, and SpiceJet between top Indian metros.</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+                        <div>
+                            <label class="block text-xs font-medium text-sky-200 mb-1">From (Origin)</label>
+                            <select id="dash-origin" class="w-full bg-slate-800/90 border border-slate-700 text-white rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-amber-400 outline-none text-sm">
+                                <option value="ALL">All Airports</option>
+                                <option value="DEL">Delhi (DEL - IGI Airport)</option>
+                                <option value="BOM">Mumbai (BOM - CSMI Airport)</option>
+                                <option value="BLR">Bengaluru (BLR - Kempegowda)</option>
+                                <option value="MAA">Chennai (MAA - Chennai Intl)</option>
+                                <option value="CCU">Kolkata (CCU - NSCBI Airport)</option>
+                                <option value="HYD">Hyderabad (HYD - RGIA)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-sky-200 mb-1">To (Destination)</label>
+                            <select id="dash-destination" class="w-full bg-slate-800/90 border border-slate-700 text-white rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-amber-400 outline-none text-sm">
+                                <option value="ALL">All Airports</option>
+                                <option value="BOM">Mumbai (BOM - CSMI Airport)</option>
+                                <option value="DEL">Delhi (DEL - IGI Airport)</option>
+                                <option value="BLR">Bengaluru (BLR - Kempegowda)</option>
+                                <option value="PNQ">Pune (PNQ - Pune Intl)</option>
+                                <option value="GOI">Goa (GOI - Dabolim)</option>
+                                <option value="AMD">Ahmedabad (AMD - SVPI Airport)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="filterDashboardFlights()" class="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-6 py-2.5 rounded-xl transition duration-150 flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <span>Search Schedules</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indian Airlines Schedules Live Board -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 flex items-center">
+                            <i class="fa-solid fa-plane-up text-brand-600 mr-2"></i> Indian domestic flight schedule
+                        </h3>
+                        <p class="text-xs text-slate-500">Real-time daily routes operated by Indian carriers</p>
+                    </div>
+                    <span class="text-xs text-slate-400 bg-slate-100 px-3 py-1 rounded-full border">
+                        Updated Live • All Times IST
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
+                                <th class="p-3.5">Airline &amp; Flight</th>
+                                <th class="p-3.5">Route (From → To)</th>
+                                <th class="p-3.5">Departure / Arrival</th>
+                                <th class="p-3.5">Class</th>
+                                <th class="p-3.5">Base Fare</th>
+                                <th class="p-3.5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="flights-table-body" class="divide-y divide-slate-100 text-sm"><tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3.5">
+                        <span class="font-bold text-slate-800 block">IndiGo</span>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">6E-204</span>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-semibold text-slate-700">Delhi (DEL) → Mumbai (BOM)</div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs text-slate-600">06:00 AM - 08:15 AM</span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Economy Available</span>
+                    </td>
+                    <td class="p-3.5 font-bold text-brand-700">
+                        ₹4,500
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="selectFlightAndBook('FL-101')" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-sm">
+                            Book Now
+                        </button>
+                    </td>
+                </tr><tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3.5">
+                        <span class="font-bold text-slate-800 block">Air India</span>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">AI-803</span>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-semibold text-slate-700">Delhi (DEL) → Bengaluru (BLR)</div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs text-slate-600">09:30 AM - 12:15 PM</span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Economy Available</span>
+                    </td>
+                    <td class="p-3.5 font-bold text-brand-700">
+                        ₹5,200
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="selectFlightAndBook('FL-102')" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-sm">
+                            Book Now
+                        </button>
+                    </td>
+                </tr><tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3.5">
+                        <span class="font-bold text-slate-800 block">Vistara</span>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">UK-945</span>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-semibold text-slate-700">Mumbai (BOM) → Delhi (DEL)</div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs text-slate-600">11:00 AM - 01:10 PM</span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Economy Available</span>
+                    </td>
+                    <td class="p-3.5 font-bold text-brand-700">
+                        ₹4,900
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="selectFlightAndBook('FL-103')" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-sm">
+                            Book Now
+                        </button>
+                    </td>
+                </tr><tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3.5">
+                        <span class="font-bold text-slate-800 block">Akasa Air</span>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">QP-1102</span>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-semibold text-slate-700">Bengaluru (BLR) → Chennai (MAA)</div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs text-slate-600">02:15 PM - 03:15 PM</span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Economy Available</span>
+                    </td>
+                    <td class="p-3.5 font-bold text-brand-700">
+                        ₹2,800
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="selectFlightAndBook('FL-104')" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-sm">
+                            Book Now
+                        </button>
+                    </td>
+                </tr><tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3.5">
+                        <span class="font-bold text-slate-800 block">SpiceJet</span>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">SG-8169</span>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-semibold text-slate-700">Kolkata (CCU) → Hyderabad (HYD)</div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs text-slate-600">04:30 PM - 06:45 PM</span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Economy Available</span>
+                    </td>
+                    <td class="p-3.5 font-bold text-brand-700">
+                        ₹3,900
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="selectFlightAndBook('FL-105')" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-sm">
+                            Book Now
+                        </button>
+                    </td>
+                </tr><tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3.5">
+                        <span class="font-bold text-slate-800 block">IndiGo</span>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">6E-5321</span>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-semibold text-slate-700">Mumbai (BOM) → Goa (GOI)</div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs text-slate-600">07:00 AM - 08:10 AM</span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Economy Available</span>
+                    </td>
+                    <td class="p-3.5 font-bold text-brand-700">
+                        ₹3,100
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="selectFlightAndBook('FL-106')" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-sm">
+                            Book Now
+                        </button>
+                    </td>
+                </tr><tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3.5">
+                        <span class="font-bold text-slate-800 block">Air India</span>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">AI-505</span>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-semibold text-slate-700">Delhi (DEL) → Pune (PNQ)</div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs text-slate-600">05:30 PM - 07:40 PM</span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Economy Available</span>
+                    </td>
+                    <td class="p-3.5 font-bold text-brand-700">
+                        ₹4,200
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="selectFlightAndBook('FL-107')" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-sm">
+                            Book Now
+                        </button>
+                    </td>
+                </tr><tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3.5">
+                        <span class="font-bold text-slate-800 block">Vistara</span>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">UK-820</span>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-semibold text-slate-700">Hyderabad (HYD) → Bengaluru (BLR)</div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs text-slate-600">08:20 PM - 09:30 PM</span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Economy Available</span>
+                    </td>
+                    <td class="p-3.5 font-bold text-brand-700">
+                        ₹3,300
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="selectFlightAndBook('FL-108')" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-sm">
+                            Book Now
+                        </button>
+                    </td>
+                </tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: BOOKING FORM ================= -->
+        <section id="section-booking" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <!-- Header -->
+                <div class="bg-slate-900 text-white p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <span class="text-xs bg-amber-400 text-slate-900 font-bold px-2.5 py-1 rounded uppercase tracking-wider">Step 1 of 2</span>
+                        <h2 class="text-2xl font-bold mt-2">Flight Reservation &amp; Passenger Info</h2>
+                        <p class="text-slate-400 text-xs mt-1">Fill in the official details to generate your verified e-Ticket.</p>
+                    </div>
+                    <div id="selected-flight-summary" class="bg-slate-800 p-3.5 rounded-xl border border-slate-700 text-xs sm:block">
+                        <span class="text-slate-400">Selected Flight:</span>
+                        <p id="summary-flight-code" class="font-bold text-amber-400 text-sm">6E-204 (IndiGo)</p>
+                        <p id="summary-flight-route" class="text-slate-200">Delhi (DEL) ➔ Mumbai (BOM)</p>
+                    </div>
+                </div>
+
+                <!-- Form Body -->
+                <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="p-6 sm:p-8 space-y-8">
+                    <!-- Flight Selection Dropdown (If not selected directly from dashboard) -->
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800 border-b pb-2 mb-4 flex items-center">
+                            <i class="fa-solid fa-plane-circle-check text-brand-600 mr-2"></i> Choose Flight Route
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Select Available Flight *</label>
+                                <select id="book-flight-select" onchange="updateSelectedFlightDetails()" required="" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none text-sm"><option value="FL-101">6E-204 - IndiGo (Delhi (DEL) to Mumbai (BOM)) - ₹4500</option><option value="FL-102">AI-803 - Air India (Delhi (DEL) to Bengaluru (BLR)) - ₹5200</option><option value="FL-103">UK-945 - Vistara (Mumbai (BOM) to Delhi (DEL)) - ₹4900</option><option value="FL-104">QP-1102 - Akasa Air (Bengaluru (BLR) to Chennai (MAA)) - ₹2800</option><option value="FL-105">SG-8169 - SpiceJet (Kolkata (CCU) to Hyderabad (HYD)) - ₹3900</option><option value="FL-106">6E-5321 - IndiGo (Mumbai (BOM) to Goa (GOI)) - ₹3100</option><option value="FL-107">AI-505 - Air India (Delhi (DEL) to Pune (PNQ)) - ₹4200</option><option value="FL-108">UK-820 - Vistara (Hyderabad (HYD) to Bengaluru (BLR)) - ₹3300</option></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Travel Date *</label>
+                                <input type="date" id="book-date" required="" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Passenger Information -->
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800 border-b pb-2 mb-4 flex items-center">
+                            <i class="fa-solid fa-user-check text-brand-600 mr-2"></i> Passenger Details
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name (As on Aadhaar/Passport) *</label>
+                                <input type="text" id="book-name" placeholder="e.g. Rahul Sharma" required="" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address *</label>
+                                <input type="email" id="book-email" placeholder="rahul@example.com" required="" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number (+91) *</label>
+                                <input type="tel" id="book-phone" placeholder="9876543210" pattern="[0-9]{10}" required="" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Age *</label>
+                                <input type="number" id="book-age" min="1" max="110" placeholder="28" required="" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Gender *</label>
+                                <select id="book-gender" required="" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none text-sm">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Government ID Type *</label>
+                                <select id="book-idtype" required="" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none text-sm">
+                                    <option value="Aadhaar Card">Aadhaar Card</option>
+                                    <option value="PAN Card">PAN Card</option>
+                                    <option value="Indian Passport">Indian Passport</option>
+                                    <option value="Voter ID">Voter ID</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seat Class & Add-ons -->
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800 border-b pb-2 mb-4 flex items-center">
+                            <i class="fa-solid fa-chair text-brand-600 mr-2"></i> Class &amp; Preferences
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Cabin Class</label>
+                                <select id="book-class" onchange="calculateFare()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none text-sm">
+                                    <option value="Economy">Economy</option>
+                                    <option value="Premium Economy">Premium Economy (+₹1,500)</option>
+                                    <option value="Business">Business Class (+₹4,500)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Seat Preference</label>
+                                <select id="book-seat" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none text-sm">
+                                    <option value="Window">Window Seat</option>
+                                    <option value="Aisle">Aisle Seat</option>
+                                    <option value="Middle">Middle Seat</option>
+                                    <option value="Extra Legroom">Extra Legroom (+₹350)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">In-Flight Meal</label>
+                                <select id="book-meal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none text-sm">
+                                    <option value="Veg Thali / Snack">Veg North Indian Meal</option>
+                                    <option value="South Indian Special">South Indian Tiffin</option>
+                                    <option value="Non-Veg Meal">Non-Veg Chicken Meal</option>
+                                    <option value="Jain Meal">Jain Special Meal</option>
+                                    <option value="None">No Meal Requested</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Breakdown & Confirmation -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div>
+                            <span class="text-xs text-slate-500 uppercase font-bold">Total Fare Calculation</span>
+                            <div class="flex items-baseline space-x-2">
+                                <span id="display-fare" class="text-3xl font-extrabold text-brand-700">₹4,500</span>
+                                <span class="text-xs text-slate-500">(Includes GST &amp; Airport Fuel Surcharge)</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3 w-full md:w-auto">
+                            <button type="button" onclick="switchTab('dashboard')" class="w-1/2 md:w-auto px-6 py-3 border border-slate-300 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition">
+                                Cancel
+                            </button>
+                            <button type="submit" class="w-1/2 md:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-lock"></i>
+                                <span>Confirm &amp; Save Booking</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 3: MANAGE BOOKINGS & CRUD ================= -->
+        <section id="section-manage" class="hidden space-y-6">
+            <!-- Header Controls -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Manage Ticket Bookings</h2>
+                    <p class="text-xs text-slate-500">View, update, print e-Tickets or cancel existing passenger records.</p>
+                </div>
+
+                <!-- Search Filter -->
+                <div class="flex items-center space-x-2">
+                    <div class="relative w-full sm:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
+                        <input type="text" id="manage-search" oninput="renderBookings()" placeholder="Search PNR, Name, Phone..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings List -->
+            <div id="bookings-list-container" class="space-y-4">
+                <!-- Dynamically filled with tickets -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal for Editing Booking -->
+    <div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-fade-in">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold text-slate-800">Edit Booking Details</h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <form id="edit-form" onsubmit="saveBookingEdit(event)" class="space-y-4">
+                <input type="hidden" id="edit-pnr">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Passenger Name</label>
+                    <input type="text" id="edit-name" required="" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Phone</label>
+                    <input type="tel" id="edit-phone" required="" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Cabin Class</label>
+                        <select id="edit-class" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm">
+                            <option value="Economy">Economy</option>
+                            <option value="Premium Economy">Premium Economy</option>
+                            <option value="Business">Business</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Seat Option</label>
+                        <select id="edit-seat" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm">
+                            <option value="Window">Window</option>
+                            <option value="Aisle">Aisle</option>
+                            <option value="Middle">Middle</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 border rounded-xl text-sm font-semibold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-600 text-white font-bold rounded-xl text-sm hover:bg-brand-700">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Printable Ticket Modal -->
+    <div id="ticket-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-6 overflow-hidden max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center no-print">
+                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                    <i class="fa-solid fa-circle-check mr-1"></i> E-Ticket Confirmed
+                </span>
+                <div class="flex space-x-2">
+                    <button onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl flex items-center space-x-2">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Print Ticket</span>
+                    </button>
+                    <button onclick="closeTicketModal()" class="p-2 text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- E-TICKET CARD (PRINTABLE) -->
+            <div id="printable-ticket" class="bg-slate-900 text-white rounded-2xl overflow-hidden border border-slate-700 shadow-xl">
+                <!-- Header Banner -->
+                <div class="gradient-bg p-5 flex justify-between items-center border-b border-white/10">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-white text-brand-700 p-2 rounded-lg">
+                            <i class="fa-solid fa-plane-departure text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-lg leading-none">BharatWings Airlines</h4>
+                            <p class="text-[11px] text-sky-200">Boarding Pass &amp; Official Itinerary</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] uppercase tracking-widest text-amber-300">PNR Reference</span>
+                        <h3 id="tkt-pnr" class="text-2xl font-black text-amber-400 tracking-wider">BW89X2</h3>
+                    </div>
+                </div>
+
+                <!-- Ticket Content -->
+                <div class="p-6 space-y-6 bg-slate-900">
+                    <!-- Route -->
+                    <div class="flex justify-between items-center bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                        <div>
+                            <span id="tkt-dep-code" class="text-3xl font-extrabold text-white">DEL</span>
+                            <p id="tkt-dep-city" class="text-xs text-slate-400">Delhi (IGI)</p>
+                            <p id="tkt-dep-time" class="text-xs text-amber-300 font-semibold mt-1">06:00 AM</p>
+                        </div>
+                        <div class="text-center px-4">
+                            <i class="fa-solid fa-plane text-brand-500 text-xl"></i>
+                            <div class="w-24 h-0.5 bg-slate-600 my-1"></div>
+                            <span id="tkt-flight-no" class="text-[11px] text-slate-300 font-bold block">6E-204</span>
+                        </div>
+                        <div class="text-right">
+                            <span id="tkt-arr-code" class="text-3xl font-extrabold text-white">BOM</span>
+                            <p id="tkt-arr-city" class="text-xs text-slate-400">Mumbai (CSMI)</p>
+                            <p id="tkt-arr-time" class="text-xs text-amber-300 font-semibold mt-1">08:10 AM</p>
+                        </div>
+                    </div>
+
+                    <!-- Details Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                        <div>
+                            <span class="text-slate-400 block uppercase">Passenger</span>
+                            <strong id="tkt-passenger" class="text-white text-sm">Rahul Sharma</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block uppercase">Travel Date</span>
+                            <strong id="tkt-date" class="text-white text-sm">2026-11-01</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block uppercase">Class / Seat</span>
+                            <strong id="tkt-class-seat" class="text-white text-sm">Economy (Window)</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block uppercase">Total Paid</span>
+                            <strong id="tkt-fare" class="text-amber-400 text-sm">₹4,500</strong>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-dashed border-slate-700 pt-4 flex justify-between items-center">
+                        <div class="text-[11px] text-slate-400">
+                            <p>Status: <span class="text-emerald-400 font-bold">CONFIRMED (Cloud Verified)</span></p>
+                            <p>Govt ID: <span id="tkt-idtype">Aadhaar Card</span></p>
+                        </div>
+                        <div class="bg-white p-1 rounded">
+                            <!-- Simulated Barcode -->
+                            <div class="w-32 h-8 bg-slate-900 flex items-center justify-around px-1">
+                                <div class="w-1 h-6 bg-white"></div>
+                                <div class="w-2 h-6 bg-white"></div>
+                                <div class="w-1 h-6 bg-white"></div>
+                                <div class="w-3 h-6 bg-white"></div>
+                                <div class="w-1 h-6 bg-white"></div>
+                                <div class="w-2 h-6 bg-white"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 text-slate-400 py-6 text-xs text-center mt-auto">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <p>© 2026 BharatWings Airlines India Reservation Network. All Cloud Services Active.</p>
+            <p class="text-slate-500">Includes routes for Delhi, Mumbai, Bengaluru, Chennai, Kolkata, Hyderabad, Goa &amp; Pune.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Default Indian Flight Routes & Flight Database
+        const indianFlights = [
+            { id: "FL-101", code: "6E-204", airline: "IndiGo", origin: "DEL", dest: "BOM", originName: "Delhi (DEL)", destName: "Mumbai (BOM)", depTime: "06:00 AM", arrTime: "08:15 AM", fare: 4500 },
+            { id: "FL-102", code: "AI-803", airline: "Air India", origin: "DEL", dest: "BLR", originName: "Delhi (DEL)", destName: "Bengaluru (BLR)", depTime: "09:30 AM", arrTime: "12:15 PM", fare: 5200 },
+            { id: "FL-103", code: "UK-945", airline: "Vistara", origin: "BOM", dest: "DEL", originName: "Mumbai (BOM)", destName: "Delhi (DEL)", depTime: "11:00 AM", arrTime: "01:10 PM", fare: 4900 },
+            { id: "FL-104", code: "QP-1102", airline: "Akasa Air", origin: "BLR", dest: "MAA", originName: "Bengaluru (BLR)", destName: "Chennai (MAA)", depTime: "02:15 PM", arrTime: "03:15 PM", fare: 2800 },
+            { id: "FL-105", code: "SG-8169", airline: "SpiceJet", origin: "CCU", dest: "HYD", originName: "Kolkata (CCU)", destName: "Hyderabad (HYD)", depTime: "04:30 PM", arrTime: "06:45 PM", fare: 3900 },
+            { id: "FL-106", code: "6E-5321", airline: "IndiGo", origin: "BOM", dest: "GOI", originName: "Mumbai (BOM)", destName: "Goa (GOI)", depTime: "07:00 AM", arrTime: "08:10 AM", fare: 3100 },
+            { id: "FL-107", code: "AI-505", airline: "Air India", origin: "DEL", dest: "PNQ", originName: "Delhi (DEL)", destName: "Pune (PNQ)", depTime: "05:30 PM", arrTime: "07:40 PM", fare: 4200 },
+            { id: "FL-108", code: "UK-820", airline: "Vistara", origin: "HYD", dest: "BLR", originName: "Hyderabad (HYD)", destName: "Bengaluru (BLR)", depTime: "08:20 PM", arrTime: "09:30 PM", fare: 3300 }
+        ];
+
+        // Global State & Cloud Storage Simulation (LocalStorage backed)
+        let bookings = [];
+
+        // On Page Load Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            loadBookingsFromStorage();
+            populateFlightOptions();
+            renderDashboardFlights(indianFlights);
+            updateDashboardStats();
+            setDefaultBookingDate();
+        });
+
+        // Set Default Date in Booking Form
+        function setDefaultBookingDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('book-date').value = today;
+        }
+
+        // Navigation Tab Switcher
+        function switchTab(tabName) {
+            document.getElementById('section-dashboard').classList.add('hidden');
+            document.getElementById('section-booking').classList.add('hidden');
+            document.getElementById('section-manage').classList.add('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-brand-900', 'shadow');
+                btn.classList.add('text-white', 'hover:bg-white/10');
+            });
+
+            document.getElementById(`section-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-white', 'text-brand-900', 'shadow');
+                activeBtn.classList.remove('hover:bg-white/10');
+            }
+
+            if (tabName === 'manage') {
+                renderBookings();
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Populate Flights Table in Dashboard
+        function renderDashboardFlights(flightList) {
+            const tbody = document.getElementById('flights-table-body');
+            tbody.innerHTML = '';
+
+            if (flightList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">No flights found matching criteria.</td></tr>`;
+                return;
+            }
+
+            flightList.forEach(flight => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3.5">
+                        <span class="font-bold text-slate-800 block">${flight.airline}</span>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">${flight.code}</span>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-semibold text-slate-700">${flight.originName} &rarr; ${flight.destName}</div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs text-slate-600">${flight.depTime} - ${flight.arrTime}</span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Economy Available</span>
+                    </td>
+                    <td class="p-3.5 font-bold text-brand-700">
+                        ₹${flight.fare.toLocaleString('en-IN')}
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="selectFlightAndBook('${flight.id}')" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-sm">
+                            Book Now
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Filter Dashboard Flights Search
+        function filterDashboardFlights() {
+            const origin = document.getElementById('dash-origin').value;
+            const dest = document.getElementById('dash-destination').value;
+
+            const filtered = indianFlights.filter(f => {
+                const matchOrigin = (origin === 'ALL' || f.origin === origin);
+                const matchDest = (dest === 'ALL' || f.dest === dest);
+                return matchOrigin && matchDest;
+            });
+
+            renderDashboardFlights(filtered);
+        }
+
+        // Populate Booking Form Dropdown
+        function populateFlightOptions() {
+            const select = document.getElementById('book-flight-select');
+            select.innerHTML = '';
+
+            indianFlights.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f.id;
+                opt.textContent = `${f.code} - ${f.airline} (${f.originName} to ${f.destName}) - ₹${f.fare}`;
+                select.appendChild(opt);
+            });
+
+            updateSelectedFlightDetails();
+        }
+
+        // Select Flight directly from Dashboard
+        function selectFlightAndBook(flightId) {
+            switchTab('booking');
+            const select = document.getElementById('book-flight-select');
+            select.value = flightId;
+            updateSelectedFlightDetails();
+        }
+
+        // Update selected flight UI info & dynamic fare
+        function updateSelectedFlightDetails() {
+            const flightId = document.getElementById('book-flight-select').value;
+            const flight = indianFlights.find(f => f.id === flightId);
+
+            if (flight) {
+                document.getElementById('summary-flight-code').textContent = `${flight.code} (${flight.airline})`;
+                document.getElementById('summary-flight-route').textContent = `${flight.originName} ➔ ${flight.destName}`;
+                document.getElementById('selected-flight-summary').classList.remove('hidden');
+                calculateFare();
+            }
+        }
+
+        // Calculate Dynamic Ticket Fare based on class
+        function calculateFare() {
+            const flightId = document.getElementById('book-flight-select').value;
+            const flight = indianFlights.find(f => f.id === flightId);
+
+            if (!flight) return;
+
+            let total = flight.fare;
+            const cabin = document.getElementById('book-class').value;
+
+            if (cabin === 'Premium Economy') total += 1500;
+            if (cabin === 'Business') total += 4500;
+
+            document.getElementById('display-fare').textContent = `₹${total.toLocaleString('en-IN')}`;
+            return total;
+        }
+
+        // Generate Random Indian PNR
+        function generatePNR() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let pnr = 'BW';
+            for (let i = 0; i < 4; i++) {
+                pnr += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return pnr;
+        }
+
+        // Handle Booking Submission (Create Operation)
+        function handleBookingSubmit(event) {
+            event.preventDefault();
+
+            const flightId = document.getElementById('book-flight-select').value;
+            const flight = indianFlights.find(f => f.id === flightId);
+
+            const pnr = generatePNR();
+            const fareAmount = calculateFare();
+
+            const newBooking = {
+                pnr: pnr,
+                flightCode: flight.code,
+                airline: flight.airline,
+                origin: flight.origin,
+                dest: flight.dest,
+                originName: flight.originName,
+                destName: flight.destName,
+                depTime: flight.depTime,
+                arrTime: flight.arrTime,
+                date: document.getElementById('book-date').value,
+                passengerName: document.getElementById('book-name').value,
+                email: document.getElementById('book-email').value,
+                phone: document.getElementById('book-phone').value,
+                age: document.getElementById('book-age').value,
+                gender: document.getElementById('book-gender').value,
+                idType: document.getElementById('book-idtype').value,
+                cabinClass: document.getElementById('book-class').value,
+                seatPref: document.getElementById('book-seat').value,
+                mealPref: document.getElementById('book-meal').value,
+                fare: fareAmount,
+                createdAt: new Date().toISOString()
+            };
+
+            bookings.unshift(newBooking);
+            saveBookingsToStorage();
+
+            showToast(`Booking Successful! PNR: ${pnr}`, 'success');
+            document.getElementById('booking-form').reset();
+            setDefaultBookingDate();
+
+            // Switch to ticket view
+            viewTicketModal(pnr);
+            switchTab('manage');
+        }
+
+        // Save Bookings (Simulating Cloud DB Sync)
+        function saveBookingsToStorage() {
+            localStorage.setItem('bharatwings_bookings', JSON.stringify(bookings));
+            updateDashboardStats();
+        }
+
+        // Load Bookings
+        function loadBookingsFromStorage() {
+            const data = localStorage.getItem('bharatwings_bookings');
+            if (data) {
+                bookings = JSON.parse(data);
+            } else {
+                // Pre-populate with 1 mock booking for demo
+                bookings = [{
+                    pnr: "BW77K1",
+                    flightCode: "6E-204",
+                    airline: "IndiGo",
+                    origin: "DEL",
+                    dest: "BOM",
+                    originName: "Delhi (DEL)",
+                    destName: "Mumbai (BOM)",
+                    depTime: "06:00 AM",
+                    arrTime: "08:15 AM",
+                    date: "2026-11-10",
+                    passengerName: "Rajesh Kumar",
+                    email: "rajesh@example.com",
+                    phone: "9876543210",
+                    age: "32",
+                    gender: "Male",
+                    idType: "Aadhaar Card",
+                    cabinClass: "Economy",
+                    seatPref: "Window",
+                    mealPref: "Veg Thali / Snack",
+                    fare: 4500,
+                    createdAt: new Date().toISOString()
+                }];
+                saveBookingsToStorage();
+            }
+        }
+
+        // Update Dashboard Stats Banner
+        function updateDashboardStats() {
+            const totalBookings = bookings.length;
+            const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.fare), 0);
+
+            document.getElementById('stat-total').textContent = totalBookings;
+            document.getElementById('stat-revenue').textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
+
+            document.getElementById('booking-badge').textContent = totalBookings;
+            document.getElementById('mobile-booking-badge').textContent = totalBookings;
+        }
+
+        // Render Bookings List (Read & Search Operations)
+        function renderBookings() {
+            const container = document.getElementById('bookings-list-container');
+            const searchVal = document.getElementById('manage-search').value.toLowerCase();
+
+            const filtered = bookings.filter(b => 
+                b.pnr.toLowerCase().includes(searchVal) ||
+                b.passengerName.toLowerCase().includes(searchVal) ||
+                b.phone.includes(searchVal) ||
+                b.flightCode.toLowerCase().includes(searchVal)
+            );
+
+            container.innerHTML = '';
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-12 text-center rounded-2xl border border-slate-200 space-y-3">
+                        <i class="fa-solid fa-ticket-simple text-4xl text-slate-300"></i>
+                        <p class="text-slate-500 font-medium">No bookings found matching search query.</p>
+                        <button onclick="switchTab('booking')" class="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-bold">Book a New Ticket</button>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(b => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-brand-300 transition";
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="bg-brand-50 text-brand-700 border border-brand-200 text-xs font-black px-2.5 py-1 rounded-lg tracking-wider">${b.pnr}</span>
+                            <span class="text-xs text-slate-500">Booked: ${new Date(b.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="viewTicketModal('${b.pnr}')" class="px-3 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-lg text-xs font-bold transition flex items-center space-x-1">
+                                <i class="fa-solid fa-eye"></i><span>E-Ticket</span>
+                            </button>
+                            <button onclick="openEditModal('${b.pnr}')" class="px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg text-xs font-bold transition flex items-center space-x-1">
+                                <i class="fa-solid fa-pen"></i><span>Edit</span>
+                            </button>
+                            <button onclick="deleteBooking('${b.pnr}')" class="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-bold transition flex items-center space-x-1">
+                                <i class="fa-solid fa-trash"></i><span>Cancel</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-xs text-slate-400 block uppercase">Passenger</span>
+                            <span class="font-bold text-slate-800">${b.passengerName} (${b.age}, ${b.gender})</span>
+                            <span class="text-xs text-slate-500 block">+91 ${b.phone}</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 block uppercase">Flight & Route</span>
+                            <span class="font-bold text-slate-800">${b.airline} (${b.flightCode})</span>
+                            <span class="text-xs text-slate-500 block">${b.originName} &rarr; ${b.destName}</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 block uppercase">Travel Date & Seat</span>
+                            <span class="font-bold text-slate-800">${b.date}</span>
+                            <span class="text-xs text-slate-500 block">${b.cabinClass} • ${b.seatPref} Seat</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 block uppercase">Fare Amount</span>
+                            <span class="font-extrabold text-emerald-600 text-base">₹${Number(b.fare).toLocaleString('en-IN')}</span>
+                            <span class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Confirmed</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // View Printable Ticket Modal
+        function viewTicketModal(pnr) {
+            const b = bookings.find(item => item.pnr === pnr);
+            if (!b) return;
+
+            document.getElementById('tkt-pnr').textContent = b.pnr;
+            document.getElementById('tkt-dep-code').textContent = b.origin;
+            document.getElementById('tkt-dep-city').textContent = b.originName;
+            document.getElementById('tkt-dep-time').textContent = b.depTime;
+            document.getElementById('tkt-arr-code').textContent = b.dest;
+            document.getElementById('tkt-arr-city').textContent = b.destName;
+            document.getElementById('tkt-arr-time').textContent = b.arrTime;
+            document.getElementById('tkt-flight-no').textContent = `${b.airline} (${b.flightCode})`;
+            document.getElementById('tkt-passenger').textContent = b.passengerName;
+            document.getElementById('tkt-date').textContent = b.date;
+            document.getElementById('tkt-class-seat').textContent = `${b.cabinClass} (${b.seatPref})`;
+            document.getElementById('tkt-fare').textContent = `₹${Number(b.fare).toLocaleString('en-IN')}`;
+            document.getElementById('tkt-idtype').textContent = b.idType;
+
+            document.getElementById('ticket-modal').classList.remove('hidden');
+        }
+
+        function closeTicketModal() {
+            document.getElementById('ticket-modal').classList.add('hidden');
+        }
+
+        // Open Edit Modal (Update Operation)
+        function openEditModal(pnr) {
+            const b = bookings.find(item => item.pnr === pnr);
+            if (!b) return;
+
+            document.getElementById('edit-pnr').value = b.pnr;
+            document.getElementById('edit-name').value = b.passengerName;
+            document.getElementById('edit-phone').value = b.phone;
+            document.getElementById('edit-class').value = b.cabinClass;
+            document.getElementById('edit-seat').value = b.seatPref;
+
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        // Save Booking Edit
+        function saveBookingEdit(event) {
+            event.preventDefault();
+            const pnr = document.getElementById('edit-pnr').value;
+            const bIndex = bookings.findIndex(item => item.pnr === pnr);
+
+            if (bIndex !== -1) {
+                bookings[bIndex].passengerName = document.getElementById('edit-name').value;
+                bookings[bIndex].phone = document.getElementById('edit-phone').value;
+                bookings[bIndex].cabinClass = document.getElementById('edit-class').value;
+                bookings[bIndex].seatPref = document.getElementById('edit-seat').value;
+
+                saveBookingsToStorage();
+                renderBookings();
+                closeEditModal();
+                showToast(`Booking ${pnr} updated successfully!`, 'info');
+            }
+        }
+
+        // Delete Booking (Delete Operation)
+        function deleteBooking(pnr) {
+            if (confirm(`Are you sure you want to cancel booking ${pnr}? This action cannot be undone.`)) {
+                bookings = bookings.filter(b => b.pnr !== pnr);
+                saveBookingsToStorage();
+                renderBookings();
+                showToast(`Booking ${pnr} cancelled.`, 'warning');
+            }
+        }
+
+        // Notification Toast Generator
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            let colors = "bg-slate-900 text-white border-slate-700";
+            if (type === 'success') colors = "bg-emerald-600 text-white";
+            if (type === 'warning') colors = "bg-rose-600 text-white";
+
+            toast.className = `${colors} px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center space-x-2 transition duration-300 transform translate-y-2`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i><span>${message}</span>`;
+
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Download Complete Source Code Zip File
+        function downloadProjectZip() {
+            const zip = new JSZip();
+
+            // Root HTML Code
+            const currentHTML = document.documentElement.outerHTML;
+            zip.file("index.html", "<!DOCTYPE html>\n" + currentHTML);
+
+            // README Documentation File
+            const readmeContent = `# BharatWings - Airline Reservation & Ticket Booking System (India)
+
+## Overview
+BharatWings is a full-featured Indian Airline Reservation System built with HTML5, Tailwind CSS, and JavaScript. 
+It supports complete CRUD operations (Create, Read, Update, Delete) for Indian domestic flights.
+
+## Included Features
+1. **Indian Airlines Schedules Board:** Includes IndiGo, Air India, Vistara, SpiceJet, and Akasa Air.
+2. **Interactive Ticket Booking:** Passenger info, Aadhaar/Passport ID, dynamic fare calculation.
+3. **E-Ticket Printable View:** PDF-styled Boarding Pass with barcode and Cloud Sync validation.
+4. **CRUD Management:** Search, Edit Passenger details, or Cancel Bookings.
+5. **Local Storage Cloud Sync Simulation:** Auto-saves data locally.
+
+## How to Run
+1. Unzip the downloaded folder.
+2. Open \`index.html\` directly in any modern web browser (Chrome, Firefox, Edge, Safari).
+3. No server or npm build required!
+`;
+            zip.file("README.md", readmeContent);
+
+            // Generate ZIP Archive
+            zip.generateAsync({ type: "blob" }).then(function (content) {
+                saveAs(content, "BharatWings_Airline_Reservation_System.zip");
+                showToast("Downloading complete source code ZIP archive...", "success");
+            });
+        }
+    </script>
+
+</body></html>
